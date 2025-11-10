@@ -102,56 +102,177 @@ Docker 部署时，数据目录 `data/` 会被挂载到容器中，确保插件�
 
 ## Vercel Serverless 部署
 
-### 1. 安装 Vercel CLI
+### 方式一：使用 Vercel CLI（推荐）
+
+#### 1. 安装 Vercel CLI
 
 ```bash
 npm i -g vercel
 ```
 
-### 2. 登录 Vercel
+#### 2. 登录 Vercel
 
 ```bash
 vercel login
 ```
 
-### 3. 部署
+#### 3. 部署
 
 ```bash
 cd musicfree-api
 vercel
 ```
 
-按照提示完成部署。
+**部署过程**：
+- 首次部署会询问一系列问题，按照以下选择：
+  - **Set up and deploy?** `Y`
+  - **Which scope?** 选择你的账户
+  - **Link to existing project?** `N`
+  - **What's your project's name?** `musicfree-api`（或自定义）
+  - **In which directory is your code located?** `./`（当前目录）
+  - **Want to override the settings?** `N`
 
-### 4. 配置环境变量
+#### 4. 等待部署完成
 
-在 Vercel 控制台中配置环境变量：
-
+部署完成后，Vercel 会提供类似以下的 URL：
 ```
-NODE_ENV=production
+https://musicfree-api-xxxx.vercel.app
 ```
 
-### 5. 访问 API
+#### 5. 测试 API
 
-部署完成后，Vercel 会提供一个 URL，例如：
-`https://musicfree-api-xxxx.vercel.app/api/health`
+访问健康检查端点：
+```bash
+https://musicfree-api-xxxx.vercel.app/api/health
+```
 
-### 限制说明
+应该返回：
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-11-11T00:00:00.000Z",
+  "platform": "vercel"
+}
+```
 
-**重要**：Vercel Serverless 部署有以下限制：
+### 方式二：通过 Git 部署
 
-1. **无持久化存储**：函数执行完后，临时文件会被删除
-2. **冷启动**：函数可能在长时间不活跃后需要重新启动
-3. **执行时间限制**：默认 10 秒，可配置最大 30 秒
+#### 1. 推送代码到 Git 仓库
 
-因此，Vercel 部署更适合：
-- 演示和测试
-- 轻量级使用
-- 插件数据从外部存储获取
+```bash
+# 初始化 Git（如果尚未初始化）
+git init
+git add .
+git commit -m "Initial commit"
+
+# 推送到 GitHub/GitLab
+git remote add origin https://github.com/your-username/musicfree-api.git
+git push -u origin main
+```
+
+#### 2. 在 Vercel 控制台部署
+
+1. 访问 [vercel.com](https://vercel.com)
+2. 点击「New Project」
+3. 选择你的 Git 仓库
+4. 配置项目：
+   - **Framework Preset**: Other
+   - **Root Directory**: `musicfree-api`（如果代码在子目录）
+   - **Build Command**: 留空
+   - **Output Directory**: 留空
+5. 点击「Deploy」
+
+### 方式三：通过 GitHub 导入
+
+#### 1. 访问 Vercel 控制台
+
+打开 [vercel.com/dashboard](https://vercel.com/dashboard)
+
+#### 2. 导入项目
+
+1. 点击「Add New Project」
+2. 选择「Import Git Repository」
+3. 选择「Browse All Templates」或直接选择你的仓库
+
+### 注意事项
+
+#### 1. 重要限制
+
+**Vercel Serverless 部署有以下限制**：
+
+1. **无持久化存储**：
+   - 函数执行完后，临时文件会被删除
+   - 插件数据无法保存
+   - 每次部署都会重置
+
+2. **执行时间限制**：
+   - 免费计划：10 秒
+   - Pro 计划：60 秒
+   - 最大可配置 30 秒（通过 `vercel.json`）
+
+3. **冷启动**：
+   - 函数长时间不活跃后，首次调用会较慢
+   - 可能导致搜索响应慢
+
+#### 2. 适用场景
+
+Vercel 部署适合：
+- ✅ **演示和测试** - 快速分享给朋友
+- ✅ **轻量级使用** - 偶尔点歌
+- ✅ **开发调试** - 快速验证功能
+- ❌ **生产环境** - 需要频繁搜索和下载
+- ❌ **重负载** - 多人同时使用
+
+#### 3. 替代方案
 
 对于生产环境，建议使用：
-- Docker 部署到自己的服务器
-- 使用云服务（如 AWS ECS、阿里云容器服务）
+- ✅ **Docker 部署** - 到自己的服务器
+- ✅ **云服务** - AWS ECS、阿里云容器服务、腾讯云
+- ✅ **VPS** - 独享资源，数据持久化
+
+### 4. 配置超时
+
+在 `vercel.json` 中配置超时（如果需要）：
+
+```json
+{
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 30
+    }
+  }
+}
+```
+
+**注意**：使用 `functions` 字段时不能同时使用 `builds` 字段。
+
+### 5. 环境变量
+
+如需设置环境变量：
+
+```bash
+# 通过 CLI
+vercel env add NODE_ENV
+
+# 或在 Vercel 控制台
+# Project Settings -> Environment Variables
+```
+
+### 6. 域名绑定
+
+如需绑定自定义域名：
+
+1. 在 Vercel 控制台进入项目
+2. 点击「Domains」选项卡
+3. 添加你的域名
+4. 按照提示配置 DNS
+
+### 7. 监控和日志
+
+在 Vercel 控制台可以查看：
+- **Functions** - 函数执行日志
+- **Analytics** - 访问统计
+- **Usage** - 资源使用情况
 
 ## Python 插件配置
 
