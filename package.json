@@ -1,0 +1,31 @@
+{
+  "name": "musicfree-api",
+  "version": "1.0.0",
+  "description": "MusicFree 插件 API 服务",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "vercel-build": "echo 'Build complete'"
+  },
+  "keywords": [
+    "musicfree",
+    "api",
+    "serverless"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "he": "^1.2.0",
+    "dayjs": "^1.11.10",
+    "crypto-js": "^4.2.0",
+    "qs": "^6.11.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

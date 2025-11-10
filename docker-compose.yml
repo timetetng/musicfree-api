@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  musicfree-api:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      # 挂载数据目录，持久化插件数据
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATA_DIR=/app/data
+      # 允许跨域访问
+      - CORS_ORIGIN=*
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+networks:
+  default:
+    name: musicfree-network
